@@ -47,3 +47,4 @@ jobs:
           script: |
             ls -l /var/www/aisontech.com/index.html
             docker exec aisontech-static wget -qO- http://127.0.0.1/index.html | grep "CI/CD Demo"
+            curl -k -s --resolve aisontech.com:443:127.0.0.1 "https://aisontech.com/index.html?cache_bust=$(date +%s)" | grep "CI/CD Demo"
