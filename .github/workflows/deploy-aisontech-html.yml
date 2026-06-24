@@ -16,7 +16,7 @@ jobs:
     steps:
       # Intent: Get latest repository files.
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       # Intent: Fail early if index.html is missing.
       - name: Verify index.html exists
