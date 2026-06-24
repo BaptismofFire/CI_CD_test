@@ -1,0 +1,49 @@
+# Intent: Deploy latest static HTML to aisontech.com web root on DigitalOcean.
+name: Deploy aisontech.com HTML
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "index.html"
+      - ".github/workflows/deploy-aisontech-html.yml"
+
+jobs:
+  deploy:
+    name: Upload index.html to /var/www/aisontech.com
+    runs-on: ubuntu-latest
+
+    steps:
+      # Intent: Get latest repository files.
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # Intent: Fail early if index.html is missing.
+      - name: Verify index.html exists
+        run: test -f index.html
+
+      # Intent: Upload latest index.html to server web root.
+      - name: Upload index.html
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.DO_HOST }}
+          username: ${{ secrets.DO_USER }}
+          port: ${{ secrets.DO_PORT }}
+          key: ${{ secrets.DO_SSH_KEY }}
+          passphrase: ${{ secrets.DO_SSH_PASSPHRASE }}
+          source: "index.html"
+          target: "/var/www/aisontech.com/"
+          overwrite: true
+
+      # Intent: Verify the mounted static container can serve the updated HTML.
+      - name: Verify server-side static HTML
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.DO_HOST }}
+          username: ${{ secrets.DO_USER }}
+          port: ${{ secrets.DO_PORT }}
+          key: ${{ secrets.DO_SSH_KEY }}
+          passphrase: ${{ secrets.DO_SSH_PASSPHRASE }}
+          script: |
+            ls -l /var/www/aisontech.com/index.html
+            docker exec aisontech-static wget -qO- http://127.0.0.1/index.html | grep "CI/CD Demo"
